@@ -15,12 +15,8 @@ function createCard(name, link) {
     deleteCard(evt.target.parentElement);
   });
 
-  addCard(cardElement);
+  return cardElement;
 }
-
-initialCards.forEach((item) => {
-  createCard(item.name, item.link);
-})
 
 // @todo: Функция удаления карточки
 function deleteCard(card) {
@@ -31,3 +27,7 @@ function deleteCard(card) {
 function addCard(card) {
   placesList.append(card);
 }
+
+initialCards.forEach((item) => {
+  addCard(createCard(item.name, item.link));
+})
