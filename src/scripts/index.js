@@ -15,8 +15,8 @@ const popupNewCard = document.querySelector('.popup_type_new-card');
 const formNewCard = document.forms['new-place'];
 
 const popupImage = document.querySelector('.popup_type_image');
-const popupImageSRC = document.querySelector('.popup__image');
-const popupCaption = document.querySelector('.popup__caption');
+const popupImageSRC = popupImage.querySelector('.popup__image');
+const popupCaption = popupImage.querySelector('.popup__caption');
 
 initialCards.forEach((item) => {
   addCard(createCard(item.name, item.link));
