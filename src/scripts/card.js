@@ -1,27 +1,18 @@
-import { popupOpen, popupClose } from './modal.js';
+import { openPopupImage } from './index.js';
 
 const cardTemplate = document.querySelector('#card-template').content;
 const placesList = document.querySelector('.places__list');
 
-function imageSettings(image, name, link) {
-  image.src = link;
-  image.alt = name;
-  return image
-}
-
-export function createCard(name, link) {
+export function createCard(name, link, modal=openPopupImage) {
   const newCard = cardTemplate.querySelector('li').cloneNode(true);
   newCard.querySelector('.card__title').textContent = name;
-  const cardImage = imageSettings(newCard.querySelector('.card__image'), name, link);
+  const cardImage = newCard.querySelector('.card__image');
+  cardImage.src = link;
+  cardImage.alt = name;
 
-  cardImage.addEventListener('click', function (evt) {
-    const popup = document.querySelector('.popup_type_image');
-    imageSettings(popup.querySelector('.popup__image'), name, link);
-    popup.querySelector('.popup__caption').textContent = name;
-    popupOpen(popup);
-    popupClose();
+  cardImage.addEventListener('click', () => {
+    modal(link, name);
   });
-
   newCard.querySelector('.card__delete-button').addEventListener('click', function (evt) {
     deleteCard(evt.target.parentElement);
   });
