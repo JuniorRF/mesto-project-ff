@@ -11,10 +11,6 @@ export function openPopup(popup) {
 
 export function closePopup(popup) {
   popup.classList.remove('popup_is-opened');
-  finishListening()
-}
-
-function finishListening() {
   window.removeEventListener('keydown', linkKeyHandler);
   document.removeEventListener('click', linkclickCloseHandler);
   linkKeyHandler = null;
