@@ -18,15 +18,13 @@ function getCards() {
   .then(result => result)
 }
 
-export function startCard() {
+export function startPage() {
     const data = Promise.all([getInfoMe(), getCards()]);
-
-    console.log('User Data:', data);
     return data
 }
 
 export function editProfile(name, about) {
-  fetch(config.baseUrl + 'users/me', {
+  return fetch(config.baseUrl + 'users/me', {
     method: 'PATCH',
     headers: config.headers,
     body: JSON.stringify({
@@ -34,14 +32,24 @@ export function editProfile(name, about) {
       about: about
     })
   })
-  .then(response => {
-    return response.json();
+}
+
+export function newCard(name, link) {
+  return fetch(config.baseUrl + 'cards ', {
+    method: 'POST',
+    headers: config.headers,
+    body: JSON.stringify({
+      name: name,
+      link: link
+    })
   })
-  .then(data => {
-    console.log('Response data:', data);
-    return data
+}
+
+// "674f5ceee00de30aedab97b3"
+
+export function deleteCard(id) {
+  return fetch(config.baseUrl + 'cards/' + id, {
+    method: 'DELETE',
+    headers: config.headers,
   })
-  .catch(error => {
-    console.error('Error:', error);
-  });
 }

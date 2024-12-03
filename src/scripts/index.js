@@ -1,8 +1,7 @@
-import { initialCards } from './basecards.js';
 import { createCard } from './card.js';
 import { openPopup, closePopup } from './modal.js';
 import { enableValidation } from './validation.js';
-import { startCard, editProfile } from './api.js';
+import { startPage, editProfile, newCard, deleteCard } from './api.js';
 
 const popups = document.querySelectorAll('.popup');
 
@@ -42,13 +41,20 @@ btnProfile.addEventListener('click', function(){
 
 formProfile.addEventListener('submit', function (evt) {
   evt.preventDefault();
-  let name = formProfile.elements.name.value;
-  let about = formProfile.elements.description.value;
-  const newProfile = editProfile(name, about);
-  
-  console.log('bu', newProfile)
-  nameProfile.textContent = name;
-  descriptionProfile.textContent = about;
+  editProfile(
+    formProfile.elements.name.value,
+    formProfile.elements.description.value,
+  )
+    .then(response => {
+      return response.json()
+    })
+    .then(data => {
+      nameProfile.textContent = data.name
+      descriptionProfile.textContent = data.about
+    })
+    .catch(error => {
+      console.error('Error:', error)
+    });
   closePopup(popupProfile);
 });
 
@@ -60,7 +66,16 @@ formNewCard.addEventListener('submit', function (evt) {
   evt.preventDefault();
   const name = formNewCard.elements['place-name'].value;
   const link = formNewCard.elements.link.value;
-  addCard(createCard(name, link, handleImagePopup, handleLikeCard));
+  newCard(name, link)
+    .then(response => response.json())
+    .then(data => {
+      console.log(data)
+      addCard(createCard(data.name, data.link, handleImagePopup, handleLikeCard, 0, data.id));
+    })
+    .catch(error => {
+      console.error('Error:', error)
+    });
+  
   formNewCard.reset();
   closePopup(popupNewCard);
 });
@@ -68,10 +83,6 @@ formNewCard.addEventListener('submit', function (evt) {
 function addCard(card) {
   placesList.prepend(card);
 };
-
-// initialCards.forEach((item) => {
-//   addCard(createCard(item.name, item.link, handleImagePopup, handleLikeCard));
-// });
 
 popups.forEach((popup) => {
   popup.classList.add('popup_is-animated');
@@ -86,19 +97,25 @@ enableValidation({
   errorClass: 'popup__error_visible'
 });
 
-// getCards()
-// getInfoMe()
+function getLikes(arr) {
+  if (Array.isArray(arr)){
+    return arr.length
+  }
+  return 0
+}
 
-(async function srartCard(){
-  let data = await startCard()
+(async function start(){
+  let data = await startPage()
   let infoMe = data[0]
   // console.log(infoMe)
   nameProfile.textContent = infoMe.name;
   descriptionProfile.textContent = infoMe.about;
   let cardsData = data[1]
-  cardsData.forEach((item) => {
-    console.log(item)
-
-    addCard(createCard(item.name, item.link, handleImagePopup, handleLikeCard));
+  cardsData.reverse().forEach((item) => {
+    console.log(item._id)
+    let likes = getLikes(item.likes)
+    
+    addCard(createCard(item.name, item.link, handleImagePopup, handleLikeCard, likes, item._id));
   });
 })()
+
