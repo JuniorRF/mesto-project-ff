@@ -62,6 +62,6 @@ function toggleButtonState(inputList, buttonElement) {
   }
 }
 
-export function clearValidation() {
+// export function clearValidation() {
     
-}
+// }

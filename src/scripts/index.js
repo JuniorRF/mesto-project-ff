@@ -2,6 +2,7 @@ import { initialCards } from './basecards.js';
 import { createCard } from './card.js';
 import { openPopup, closePopup } from './modal.js';
 import { enableValidation } from './validation.js';
+import { startCard, editProfile } from './api.js';
 
 const popups = document.querySelectorAll('.popup');
 
@@ -41,8 +42,13 @@ btnProfile.addEventListener('click', function(){
 
 formProfile.addEventListener('submit', function (evt) {
   evt.preventDefault();
-  nameProfile.textContent = formProfile.elements.name.value;
-  descriptionProfile.textContent = formProfile.elements.description.value;
+  let name = formProfile.elements.name.value;
+  let about = formProfile.elements.description.value;
+  const newProfile = editProfile(name, about);
+  
+  console.log('bu', newProfile)
+  nameProfile.textContent = name;
+  descriptionProfile.textContent = about;
   closePopup(popupProfile);
 });
 
@@ -63,9 +69,9 @@ function addCard(card) {
   placesList.prepend(card);
 };
 
-initialCards.forEach((item) => {
-  addCard(createCard(item.name, item.link, handleImagePopup, handleLikeCard));
-});
+// initialCards.forEach((item) => {
+//   addCard(createCard(item.name, item.link, handleImagePopup, handleLikeCard));
+// });
 
 popups.forEach((popup) => {
   popup.classList.add('popup_is-animated');
@@ -79,3 +85,20 @@ enableValidation({
   inputErrorClass: 'popup__input_type_error',
   errorClass: 'popup__error_visible'
 });
+
+// getCards()
+// getInfoMe()
+
+(async function srartCard(){
+  let data = await startCard()
+  let infoMe = data[0]
+  // console.log(infoMe)
+  nameProfile.textContent = infoMe.name;
+  descriptionProfile.textContent = infoMe.about;
+  let cardsData = data[1]
+  cardsData.forEach((item) => {
+    console.log(item)
+
+    addCard(createCard(item.name, item.link, handleImagePopup, handleLikeCard));
+  });
+})()
