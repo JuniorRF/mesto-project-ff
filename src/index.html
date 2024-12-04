@@ -11,10 +11,14 @@
 <div class="page__content">
   <header class="header page__section">
     <img src="<%=require('./images/logo.svg')%>" alt="Логотип проекта масто" class="logo header__logo">
+    
   </header>
   <main class="content">
     <section class="profile page__section">
-      <div class="profile__image"></div>
+      <div class="profile__image">
+        <img src="<%= require('./images/edit-profile.svg') %>" alt="Редактировать" class="profile__image-icon">
+      </div>
+    
       <div class="profile__info">
         <h1 class="profile__title"></h1>
         <button class="profile__edit-button" type="button"></button>
@@ -96,7 +100,7 @@
         <label class="form__field">
           <input id="card-link" name="link" type="url" class="popup__input popup__input_type_url" placeholder="Ссылка на картинку" required >
         
-          <span class="name-input-error span_error"></span>
+          <span class="card-link-error span_error"></span>
         </label>
         <button type="submit" class="button popup__button">Сохранить</button>
       </form>

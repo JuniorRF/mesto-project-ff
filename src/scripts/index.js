@@ -1,7 +1,7 @@
 import { createCard } from './card.js';
 import { openPopup, closePopup } from './modal.js';
 import { enableValidation } from './validation.js';
-import { startPage, editProfile, newCard, likeCard, deleteLikeCard } from './api.js';
+import { startPage, editProfile, newCard, likeCard, deleteLikeCard, changeAvatar } from './api.js';
 
 const popups = document.querySelectorAll('.popup');
 
@@ -25,9 +25,18 @@ const popupCaption = popupImage.querySelector('.popup__caption');
 
 const placesList = document.querySelector('.places__list');
 
-
 imageMe.addEventListener('click', function(){
   openPopup(popupImageProfile);
+});
+
+formImageProfile.addEventListener('submit', function (evt) {
+  evt.preventDefault();
+  changeAvatar(formImageProfile.elements.link.value)
+  .then(response => response.json())
+  .then(data => {
+    imageMe.style.backgroundImage = `url('${data.avatar}')`
+  })
+  closePopup(popupImageProfile)
 });
 
 function handleImagePopup(link, name) {
@@ -69,7 +78,7 @@ formProfile.addEventListener('submit', function (evt) {
   evt.preventDefault();
   editProfile(
     formProfile.elements.name.value,
-    formProfile.elements.description.value,
+    formProfile.elements.description.value
   )
     .then(response => {
       return response.json();
@@ -127,21 +136,22 @@ function getCountLikes(arr) {
     return arr.length
   }
   return 0
-}
+};
 
 function myCard(myId, cardId) {
   return myId === cardId
-}
+};
 
 (async function start(){
   let data = await startPage()
   let infoMe = data[0]
-  // console.log(infoMe._id)
+  // console.log(infoMe.avatar)
+  imageMe.style.backgroundImage = `url('${infoMe.avatar}')`
   nameProfile.textContent = infoMe.name;
   descriptionProfile.textContent = infoMe.about;
   let cardsData = data[1]
   cardsData.reverse().forEach((item) => {
-    // console.log(item._id)
+    // console.log(item)
     // console.log(item.likes)
     let likes = getCountLikes(item.likes)
     const myCardBool = myCard(infoMe._id, item.owner._id)
@@ -159,4 +169,4 @@ function myCard(myId, cardId) {
       myLikeBool
     ));
   });
-})()
+})();

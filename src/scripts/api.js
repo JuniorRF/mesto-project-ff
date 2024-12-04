@@ -67,7 +67,7 @@ export function deleteLikeCard(cardId) {
 }
 
 export function changeAvatar(avatar) {
-  return fetch(config.baseUrl + 'users/me/avatar ' + cardId, {
+  return fetch(config.baseUrl + 'users/me/avatar', {
     method: 'PATCH',
     headers: config.headers,
     body: JSON.stringify({
