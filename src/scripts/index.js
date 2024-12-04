@@ -1,7 +1,7 @@
 import { createCard } from './card.js';
 import { openPopup, closePopup } from './modal.js';
 import { enableValidation } from './validation.js';
-import { startPage, editProfile, newCard, deleteCard } from './api.js';
+import { startPage, editProfile, newCard, likeCard, deleteLikeCard } from './api.js';
 
 const popups = document.querySelectorAll('.popup');
 
@@ -10,6 +10,10 @@ const nameProfile = document.querySelector('.profile__title');
 const descriptionProfile  = document.querySelector('.profile__description');
 const popupProfile = document.querySelector('.popup_type_edit');
 const formProfile = document.forms['edit-profile'];
+
+const imageMe = document.querySelector('.profile__image');
+const popupImageProfile = document.querySelector('.popup_image_me');
+const formImageProfile = document.forms['image-profile'];
 
 const btnAddCard = document.querySelector('.profile__add-button');
 const popupNewCard = document.querySelector('.popup_type_new-card');
@@ -22,6 +26,10 @@ const popupCaption = popupImage.querySelector('.popup__caption');
 const placesList = document.querySelector('.places__list');
 
 
+imageMe.addEventListener('click', function(){
+  openPopup(popupImageProfile);
+});
+
 function handleImagePopup(link, name) {
   popupImageSRC.src = link;
   popupImageSRC.alt = name;
@@ -29,8 +37,26 @@ function handleImagePopup(link, name) {
   openPopup(popupImage);
 };
 
+
 function handleLikeCard(evt) {
-  evt.target.classList.toggle('card__like-button_is-active');
+  const like = evt.target
+  const cardId = like.parentElement.parentElement.parentElement.getAttribute('data-id')
+  let countLikes = like.parentElement.querySelector('.count_likes')
+  if (evt.target.classList.contains('card__like-button_is-active')) {
+    deleteLikeCard(cardId)
+      .then(response => response.json())
+      .then(result => {
+        countLikes.textContent = getCountLikes(result.likes)
+      })
+    like.classList.remove('card__like-button_is-active')
+  } else {
+    likeCard(cardId)
+    .then(response => response.json())
+    .then(result => {
+      countLikes.textContent = getCountLikes(result.likes)
+    })
+    like.classList.add('card__like-button_is-active')
+  }
 };
 
 btnProfile.addEventListener('click', function(){
@@ -46,11 +72,11 @@ formProfile.addEventListener('submit', function (evt) {
     formProfile.elements.description.value,
   )
     .then(response => {
-      return response.json()
+      return response.json();
     })
     .then(data => {
-      nameProfile.textContent = data.name
-      descriptionProfile.textContent = data.about
+      nameProfile.textContent = data.name;
+      descriptionProfile.textContent = data.about;
     })
     .catch(error => {
       console.error('Error:', error)
@@ -69,8 +95,7 @@ formNewCard.addEventListener('submit', function (evt) {
   newCard(name, link)
     .then(response => response.json())
     .then(data => {
-      console.log(data)
-      addCard(createCard(data.name, data.link, handleImagePopup, handleLikeCard, 0, data.id));
+      addCard(createCard(data.name, data.link, handleImagePopup, handleLikeCard, 0, data._id, true, false));
     })
     .catch(error => {
       console.error('Error:', error)
@@ -97,25 +122,41 @@ enableValidation({
   errorClass: 'popup__error_visible'
 });
 
-function getLikes(arr) {
+function getCountLikes(arr) {
   if (Array.isArray(arr)){
     return arr.length
   }
   return 0
 }
 
+function myCard(myId, cardId) {
+  return myId === cardId
+}
+
 (async function start(){
   let data = await startPage()
   let infoMe = data[0]
-  // console.log(infoMe)
+  // console.log(infoMe._id)
   nameProfile.textContent = infoMe.name;
   descriptionProfile.textContent = infoMe.about;
   let cardsData = data[1]
   cardsData.reverse().forEach((item) => {
-    console.log(item._id)
-    let likes = getLikes(item.likes)
-    
-    addCard(createCard(item.name, item.link, handleImagePopup, handleLikeCard, likes, item._id));
+    // console.log(item._id)
+    // console.log(item.likes)
+    let likes = getCountLikes(item.likes)
+    const myCardBool = myCard(infoMe._id, item.owner._id)
+    const myLikeBool =  item.likes.some(like => {
+      return like._id === infoMe._id
+    })
+    addCard(createCard(
+      item.name,
+      item.link,
+      handleImagePopup,
+      handleLikeCard,
+      likes,
+      item._id,
+      myCardBool,
+      myLikeBool
+    ));
   });
 })()
-

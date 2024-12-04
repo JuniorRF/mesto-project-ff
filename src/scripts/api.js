@@ -45,11 +45,33 @@ export function newCard(name, link) {
   })
 }
 
-// "674f5ceee00de30aedab97b3"
-
 export function deleteCard(id) {
   return fetch(config.baseUrl + 'cards/' + id, {
     method: 'DELETE',
     headers: config.headers,
+  })
+}
+
+export function likeCard(cardId) {
+  return fetch(config.baseUrl + 'cards/likes/' + cardId, {
+    method: 'PUT',
+    headers: config.headers
+  })
+}
+
+export function deleteLikeCard(cardId) {
+  return fetch(config.baseUrl + 'cards/likes/' + cardId, {
+    method: 'DELETE',
+    headers: config.headers
+  })
+}
+
+export function changeAvatar(avatar) {
+  return fetch(config.baseUrl + 'users/me/avatar ' + cardId, {
+    method: 'PATCH',
+    headers: config.headers,
+    body: JSON.stringify({
+      avatar: avatar,
+    })
   })
 }
