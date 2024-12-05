@@ -49,7 +49,7 @@
         </label>
 
         <label class="form__field">
-          <input id="description-input" name="description" type="text" class="popup__input popup__input_type_description" placeholder="Занятие" required minlength="2" maxlength="40" pattern="^[a-zA-Zа-яА-ЯёЁ\s\-]+$">
+          <input id="description-input" name="description" type="text" class="popup__input popup__input_type_description" placeholder="Занятие" required minlength="2" maxlength="40" pattern="^[a-zA-Zа-яА-ЯёЁ,\.\s\-]+$">
 
         <span class="description-input-error span_error"></span>
       </label>
@@ -62,7 +62,7 @@
     <div class="popup__content">
       <button type="button" class="popup__close"></button>
       <h3 class="popup__title">Новое место</h3>
-      <form class="popup__form" name="new-place">
+      <form class="popup__form" name="new-place" novalidate>
         <label class="form__field">
           <input id="place-name" name="place-name" type="text"
             class="popup__input popup__input_type_card-name" placeholder="Название"

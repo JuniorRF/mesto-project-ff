@@ -45,12 +45,6 @@ formImageProfile.addEventListener('submit', function (evt) {
   const button = formImageProfile.querySelector('button')
   renderLoading(true, button)
   changeAvatar(formImageProfile.elements.link.value)
-  .then(response => {
-    if (response.ok) {
-      return response.json();
-    }
-    return Promise.reject(`Ошибка: ${response.status}`);
-  })
   .then(data => {
     imageMe.style.backgroundImage = `url('${data.avatar}')`
   })
@@ -78,23 +72,12 @@ function handleLikeCard(evt) {
   let countLikes = like.parentElement.querySelector('.count_likes')
   if (evt.target.classList.contains('card__like-button_is-active')) {
     deleteLikeCard(cardId)
-      .then(response => {
-        if (response.ok) {
-          return response.json();
-        }
-      })
       .then(result => {
         countLikes.textContent = getCountLikes(result.likes)
       })
     like.classList.remove('card__like-button_is-active')
   } else {
     likeCard(cardId)
-    .then(response => {
-      if (response.ok) {
-        return response.json();
-      }
-      return Promise.reject(`Ошибка: ${response.status}`);
-    })
     .then(result => {
       countLikes.textContent = getCountLikes(result.likes)
     })
@@ -120,12 +103,6 @@ formProfile.addEventListener('submit', function (evt) {
     formProfile.elements.name.value,
     formProfile.elements.description.value
   )
-  .then(response => {
-    if (response.ok) {
-      return response.json();
-    }
-    return Promise.reject(`Ошибка: ${response.status}`);
-  })
   .then(data => {
     nameProfile.textContent = data.name;
     descriptionProfile.textContent = data.about;
@@ -151,12 +128,6 @@ formNewCard.addEventListener('submit', function (evt) {
   const button = formNewCard.querySelector('button')
   renderLoading(true, button)
   newCard(name, link)
-  .then(response => {
-    if (response.ok) {
-      return response.json();
-    }
-    return Promise.reject(`Ошибка: ${response.status}`);
-  })
     .then(data => {
       addCard(createCard(data.name, data.link, handleImagePopup, handleLikeCard, 0, data._id, true, false));
     })
