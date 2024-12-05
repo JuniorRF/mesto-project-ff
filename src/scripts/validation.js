@@ -62,6 +62,15 @@ function toggleButtonState(inputList, buttonElement) {
   }
 }
 
-// export function clearValidation() {
-    
-// }
+export function clearValidation(form, validationConfig) {
+  const inputList = Array.from(form.querySelectorAll(validationConfig.inputSelector));
+  const buttonElement = form.querySelector(validationConfig.submitButtonSelector);
+
+  inputList.forEach((inputElement) => {
+    hideInputError(validationConfig, form, inputElement);
+    inputElement.setCustomValidity('');
+  });
+
+  toggleButtonState(inputList, buttonElement);
+}
+

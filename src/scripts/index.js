@@ -1,6 +1,6 @@
 import { createCard } from './card.js';
 import { openPopup, closePopup } from './modal.js';
-import { enableValidation } from './validation.js';
+import { enableValidation, clearValidation } from './validation.js';
 import { startPage, editProfile, newCard, likeCard, deleteLikeCard, changeAvatar } from './api.js';
 
 const popups = document.querySelectorAll('.popup');
@@ -25,18 +25,43 @@ const popupCaption = popupImage.querySelector('.popup__caption');
 
 const placesList = document.querySelector('.places__list');
 
+const validationConfig = {
+  formSelector: '.popup__form',
+  inputSelector: '.popup__input',
+  submitButtonSelector: '.popup__button',
+  inactiveButtonClass: 'popup__button_disabled',
+  inputErrorClass: 'popup__input_type_error',
+  errorClass: 'popup__error_visible'
+}
+
+enableValidation(validationConfig);
+
 imageMe.addEventListener('click', function(){
   openPopup(popupImageProfile);
 });
 
 formImageProfile.addEventListener('submit', function (evt) {
   evt.preventDefault();
+  const button = formImageProfile.querySelector('button')
+  renderLoading(true, button)
   changeAvatar(formImageProfile.elements.link.value)
-  .then(response => response.json())
+  .then(response => {
+    if (response.ok) {
+      return response.json();
+    }
+    return Promise.reject(`Ошибка: ${response.status}`);
+  })
   .then(data => {
     imageMe.style.backgroundImage = `url('${data.avatar}')`
   })
-  closePopup(popupImageProfile)
+  .catch(error => {
+    console.error(error)
+  })
+  .finally(()=>{
+    renderLoading(false, button);
+    formImageProfile.reset();
+    closePopup(popupImageProfile);
+  })
 });
 
 function handleImagePopup(link, name) {
@@ -53,16 +78,28 @@ function handleLikeCard(evt) {
   let countLikes = like.parentElement.querySelector('.count_likes')
   if (evt.target.classList.contains('card__like-button_is-active')) {
     deleteLikeCard(cardId)
-      .then(response => response.json())
+      .then(response => {
+        if (response.ok) {
+          return response.json();
+        }
+      })
       .then(result => {
         countLikes.textContent = getCountLikes(result.likes)
       })
     like.classList.remove('card__like-button_is-active')
   } else {
     likeCard(cardId)
-    .then(response => response.json())
+    .then(response => {
+      if (response.ok) {
+        return response.json();
+      }
+      return Promise.reject(`Ошибка: ${response.status}`);
+    })
     .then(result => {
       countLikes.textContent = getCountLikes(result.likes)
+    })
+    .catch(error => {
+      console.error(error)
     })
     like.classList.add('card__like-button_is-active')
   }
@@ -71,29 +108,39 @@ function handleLikeCard(evt) {
 btnProfile.addEventListener('click', function(){
   formProfile.name.value = nameProfile.textContent;
   formProfile.description.value = descriptionProfile.textContent;
+  clearValidation(formProfile, validationConfig)
   openPopup(popupProfile);
 });
 
 formProfile.addEventListener('submit', function (evt) {
   evt.preventDefault();
+  const button = formProfile.querySelector('button')
+  renderLoading(true, button)
   editProfile(
     formProfile.elements.name.value,
     formProfile.elements.description.value
   )
-    .then(response => {
+  .then(response => {
+    if (response.ok) {
       return response.json();
-    })
-    .then(data => {
-      nameProfile.textContent = data.name;
-      descriptionProfile.textContent = data.about;
-    })
-    .catch(error => {
-      console.error('Error:', error)
-    });
-  closePopup(popupProfile);
+    }
+    return Promise.reject(`Ошибка: ${response.status}`);
+  })
+  .then(data => {
+    nameProfile.textContent = data.name;
+    descriptionProfile.textContent = data.about;
+  })
+  .catch(error => {
+    console.error(error)
+  })
+  .finally(()=>{
+    renderLoading(false, button);
+    closePopup(popupProfile);
+  })
 });
 
 btnAddCard.addEventListener('click', function(){
+  clearValidation(popupNewCard, validationConfig)
   openPopup(popupNewCard);
 });
 
@@ -101,17 +148,26 @@ formNewCard.addEventListener('submit', function (evt) {
   evt.preventDefault();
   const name = formNewCard.elements['place-name'].value;
   const link = formNewCard.elements.link.value;
+  const button = formNewCard.querySelector('button')
+  renderLoading(true, button)
   newCard(name, link)
-    .then(response => response.json())
+  .then(response => {
+    if (response.ok) {
+      return response.json();
+    }
+    return Promise.reject(`Ошибка: ${response.status}`);
+  })
     .then(data => {
       addCard(createCard(data.name, data.link, handleImagePopup, handleLikeCard, 0, data._id, true, false));
     })
     .catch(error => {
-      console.error('Error:', error)
-    });
-  
-  formNewCard.reset();
-  closePopup(popupNewCard);
+      console.error(error)
+    })
+    .finally(()=>{
+      renderLoading(false, button);
+      formNewCard.reset();
+      closePopup(popupNewCard);
+    })
 });
 
 function addCard(card) {
@@ -120,15 +176,6 @@ function addCard(card) {
 
 popups.forEach((popup) => {
   popup.classList.add('popup_is-animated');
-});
-
-enableValidation({
-  formSelector: '.popup__form',
-  inputSelector: '.popup__input',
-  submitButtonSelector: '.popup__button',
-  inactiveButtonClass: 'popup__button_disabled',
-  inputErrorClass: 'popup__input_type_error',
-  errorClass: 'popup__error_visible'
 });
 
 function getCountLikes(arr) {
@@ -142,17 +189,22 @@ function myCard(myId, cardId) {
   return myId === cardId
 };
 
+function renderLoading(isLoading, button){
+  if (isLoading) {
+    button.textContent = 'Сохранение...'
+  } else {
+    button.textContent = 'Сохранить'
+  }
+}
+
 (async function start(){
   let data = await startPage()
   let infoMe = data[0]
-  // console.log(infoMe.avatar)
   imageMe.style.backgroundImage = `url('${infoMe.avatar}')`
   nameProfile.textContent = infoMe.name;
   descriptionProfile.textContent = infoMe.about;
   let cardsData = data[1]
   cardsData.reverse().forEach((item) => {
-    // console.log(item)
-    // console.log(item.likes)
     let likes = getCountLikes(item.likes)
     const myCardBool = myCard(infoMe._id, item.owner._id)
     const myLikeBool =  item.likes.some(like => {

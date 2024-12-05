@@ -8,14 +8,30 @@ const config = {
 
 function getInfoMe() {
   return fetch(config.baseUrl + 'users/me', {headers: config.headers})
-  .then(res => res.json())
+  .then(response => {
+    if (response.ok) {
+      return response.json();
+    }
+    return Promise.reject(`Ошибка: ${response.status}`);
+  })
   .then(result => result)
+  .catch(error => {
+    console.error(error)
+  })
 }
 
 function getCards() {
   return fetch(config.baseUrl + 'cards', {headers: config.headers})
-  .then(res => res.json())
+  .then(response => {
+    if (response.ok) {
+      return response.json();
+    }
+    return Promise.reject(`Ошибка: ${response.status}`);
+  })
   .then(result => result)
+  .catch(error => {
+    console.error(error)
+  })
 }
 
 export function startPage() {
