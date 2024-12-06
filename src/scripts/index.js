@@ -1,7 +1,7 @@
 import { createCard } from './card.js';
 import { openPopup, closePopup } from './modal.js';
 import { enableValidation, clearValidation } from './validation.js';
-import { startPage, editProfile, newCard, likeCard, deleteLikeCard, changeAvatar } from './api.js';
+import { startPage, editProfile, newCard, deleteCard, likeCard, deleteLikeCard, changeAvatar } from './api.js';
 
 const popups = document.querySelectorAll('.popup');
 
@@ -21,7 +21,7 @@ const formNewCard = document.forms['new-place'];
 
 const popupImage = document.querySelector('.popup_type_image');
 const popupImageSRC = popupImage.querySelector('.popup__image');
-const popupCaption = popupImage.querySelector('.popup__caption');
+const popupImageCaption = popupImage.querySelector('.popup__caption');
 
 const placesList = document.querySelector('.places__list');
 
@@ -36,7 +36,47 @@ const validationConfig = {
 
 enableValidation(validationConfig);
 
+const handlerError = error => {
+  console.error(error)
+}
+
+function handlerImagePopup(link, name) {
+  popupImageSRC.src = link;
+  popupImageSRC.alt = name;
+  popupImageCaption.textContent = name;
+  openPopup(popupImage);
+};
+
+function handlerLikeCard(evt) {
+  const like = evt.target
+  const cardId = like.parentElement.parentElement.parentElement.getAttribute('data-id')
+  let countLikes = like.parentElement.querySelector('.count_likes')
+  if (evt.target.classList.contains('card__like-button_is-active')) {
+    deleteLikeCard(cardId)
+      .then(result => {
+        like.classList.remove('card__like-button_is-active')
+        countLikes.textContent = getCountLikes(result.likes)
+      })
+  } else {
+    likeCard(cardId)
+      .then(result => {
+        like.classList.add('card__like-button_is-active')
+        countLikes.textContent = getCountLikes(result.likes)
+      })
+      .catch(handlerError)
+  }
+};
+
+function handlerdeleteCard(evt) {
+  deleteCard(evt.target.closest('.card').getAttribute('data-id'))
+    .then(() => {
+      evt.target.closest('.card').remove()
+    })
+    .catch(handlerError)
+}
+
 imageMe.addEventListener('click', function(){
+  // clearValidation(formImageProfile, validationConfig)
   openPopup(popupImageProfile);
 });
 
@@ -48,45 +88,13 @@ formImageProfile.addEventListener('submit', function (evt) {
   .then(data => {
     imageMe.style.backgroundImage = `url('${data.avatar}')`
   })
-  .catch(error => {
-    console.error(error)
-  })
+  .catch(handlerError)
   .finally(()=>{
     renderLoading(false, button);
     formImageProfile.reset();
     closePopup(popupImageProfile);
   })
 });
-
-function handleImagePopup(link, name) {
-  popupImageSRC.src = link;
-  popupImageSRC.alt = name;
-  popupCaption.textContent = name;
-  openPopup(popupImage);
-};
-
-
-function handleLikeCard(evt) {
-  const like = evt.target
-  const cardId = like.parentElement.parentElement.parentElement.getAttribute('data-id')
-  let countLikes = like.parentElement.querySelector('.count_likes')
-  if (evt.target.classList.contains('card__like-button_is-active')) {
-    deleteLikeCard(cardId)
-      .then(result => {
-        countLikes.textContent = getCountLikes(result.likes)
-      })
-    like.classList.remove('card__like-button_is-active')
-  } else {
-    likeCard(cardId)
-    .then(result => {
-      countLikes.textContent = getCountLikes(result.likes)
-    })
-    .catch(error => {
-      console.error(error)
-    })
-    like.classList.add('card__like-button_is-active')
-  }
-};
 
 btnProfile.addEventListener('click', function(){
   formProfile.name.value = nameProfile.textContent;
@@ -107,9 +115,7 @@ formProfile.addEventListener('submit', function (evt) {
     nameProfile.textContent = data.name;
     descriptionProfile.textContent = data.about;
   })
-  .catch(error => {
-    console.error(error)
-  })
+  .catch(handlerError)
   .finally(()=>{
     renderLoading(false, button);
     closePopup(popupProfile);
@@ -129,11 +135,9 @@ formNewCard.addEventListener('submit', function (evt) {
   renderLoading(true, button)
   newCard(name, link)
     .then(data => {
-      addCard(createCard(data.name, data.link, handleImagePopup, handleLikeCard, 0, data._id, true, false));
+      addCard(createCard(data.name, data.link, handlerImagePopup, handlerLikeCard, 0, data._id, true, false, handlerdeleteCard));
     })
-    .catch(error => {
-      console.error(error)
-    })
+    .catch(handlerError)
     .finally(()=>{
       renderLoading(false, button);
       formNewCard.reset();
@@ -184,12 +188,13 @@ function renderLoading(isLoading, button){
     addCard(createCard(
       item.name,
       item.link,
-      handleImagePopup,
-      handleLikeCard,
+      handlerImagePopup,
+      handlerLikeCard,
       likes,
       item._id,
       myCardBool,
-      myLikeBool
+      myLikeBool,
+      handlerdeleteCard
     ));
   });
 })();

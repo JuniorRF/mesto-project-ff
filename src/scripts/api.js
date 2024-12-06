@@ -6,16 +6,16 @@ const config = {
   }
 }
 
-const handleResponse = (response) => {
+const handlerResponse = (response) => {
   if (response.ok) {
     return response.json();
   }
-  return Promise.reject(`Ошибка: ${response.status}`);
+  return Promise.reject(`Ошибка: ${response.status}: ${response}`);
 }
 
 function getInfoMe() {
   return fetch(config.baseUrl + 'users/me', {headers: config.headers})
-  .then(handleResponse)
+  .then(handlerResponse)
   .then(result => result)
   .catch(error => {
     console.error(error)
@@ -24,7 +24,7 @@ function getInfoMe() {
 
 function getCards() {
   return fetch(config.baseUrl + 'cards', {headers: config.headers})
-  .then(handleResponse)
+  .then(handlerResponse)
   .then(result => result)
   .catch(error => {
     console.error(error)
@@ -44,7 +44,7 @@ export function editProfile(name, about) {
       name: name,
       about: about
     })
-  }).then(handleResponse)
+  }).then(handlerResponse)
 }
 
 export function newCard(name, link) {
@@ -55,28 +55,28 @@ export function newCard(name, link) {
       name: name,
       link: link
     })
-  }).then(handleResponse)
+  }).then(handlerResponse)
 }
 
 export function deleteCard(id) {
   return fetch(config.baseUrl + 'cards/' + id, {
     method: 'DELETE',
     headers: config.headers,
-  }).then(handleResponse)
+  }).then(handlerResponse)
 }
 
 export function likeCard(cardId) {
   return fetch(config.baseUrl + 'cards/likes/' + cardId, {
     method: 'PUT',
     headers: config.headers
-  }).then(handleResponse)
+  }).then(handlerResponse)
 }
 
 export function deleteLikeCard(cardId) {
   return fetch(config.baseUrl + 'cards/likes/' + cardId, {
     method: 'DELETE',
     headers: config.headers
-  })
+  }).then(handlerResponse)
 }
 
 export function changeAvatar(avatar) {
@@ -86,5 +86,5 @@ export function changeAvatar(avatar) {
     body: JSON.stringify({
       avatar: avatar,
     })
-  }).then(handleResponse)
+  }).then(handlerResponse)
 }

@@ -1,9 +1,7 @@
-import { deleteCard } from './api.js';
-
-
 const cardTemplate = document.querySelector('#card-template').content;
 
-export function createCard(name, link, handleImagePopup, handleLike, countLikes, id, myCard, myLike) {
+export function createCard(name, link, handlerImagePopup, handlerLike,
+  countLikes, id, myCard, myLike, handlerdeleteCard) {
   const newCard = cardTemplate.querySelector('li').cloneNode(true);
   newCard.setAttribute('data-id', id);
   newCard.querySelector('.card__title').textContent = name;
@@ -12,14 +10,12 @@ export function createCard(name, link, handleImagePopup, handleLike, countLikes,
   cardImage.alt = name;
 
   cardImage.addEventListener('click', () => {
-    handleImagePopup(link, name);
+    handlerImagePopup(link, name);
   });
 
   const basketElement = newCard.querySelector('.card__delete-button')
   if (myCard) {
-    basketElement.addEventListener('click',  (evt) => {
-      deleteCard(evt.target.parentElement.getAttribute('data-id'))
-      evt.target.parentElement.remove()})
+    basketElement.addEventListener('click', handlerdeleteCard)
   } else {
     basketElement.remove()
   }
@@ -28,10 +24,9 @@ export function createCard(name, link, handleImagePopup, handleLike, countLikes,
   if (myLike) {
     likeCard.classList.add('card__like-button_is-active')
   }
-  likeCard.addEventListener('click', handleLike);
+  likeCard.addEventListener('click', handlerLike);
   
   newCard.querySelector('.count_likes').textContent = countLikes;
 
   return newCard;
 }
-
