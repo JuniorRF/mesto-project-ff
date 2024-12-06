@@ -76,7 +76,7 @@ function handlerdeleteCard(evt) {
 }
 
 imageMe.addEventListener('click', function(){
-  // clearValidation(formImageProfile, validationConfig)
+  clearValidation(formImageProfile, validationConfig)
   openPopup(popupImageProfile);
 });
 
@@ -87,12 +87,12 @@ formImageProfile.addEventListener('submit', function (evt) {
   changeAvatar(formImageProfile.elements.link.value)
   .then(data => {
     imageMe.style.backgroundImage = `url('${data.avatar}')`
+    closePopup(popupImageProfile);
   })
   .catch(handlerError)
   .finally(()=>{
     renderLoading(false, button);
     formImageProfile.reset();
-    closePopup(popupImageProfile);
   })
 });
 
@@ -114,11 +114,11 @@ formProfile.addEventListener('submit', function (evt) {
   .then(data => {
     nameProfile.textContent = data.name;
     descriptionProfile.textContent = data.about;
+    closePopup(popupProfile);
   })
   .catch(handlerError)
   .finally(()=>{
     renderLoading(false, button);
-    closePopup(popupProfile);
   })
 });
 
@@ -136,12 +136,12 @@ formNewCard.addEventListener('submit', function (evt) {
   newCard(name, link)
     .then(data => {
       addCard(createCard(data.name, data.link, handlerImagePopup, handlerLikeCard, 0, data._id, true, false, handlerdeleteCard));
+      closePopup(popupNewCard);
+      formNewCard.reset();
     })
     .catch(handlerError)
     .finally(()=>{
       renderLoading(false, button);
-      formNewCard.reset();
-      closePopup(popupNewCard);
     })
 });
 
