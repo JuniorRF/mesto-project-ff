@@ -54,6 +54,7 @@ const HandlerLikeCard = (cardId, likeCard, likeCount) => {
         likeCard.classList.remove('card__like-button_is-active')
         likeCount.textContent = getCountLikes(result.likes)
       })
+      .catch(handlerError)
   } else {
     likeCardAPI(cardId)
       .then(result => {
@@ -66,8 +67,6 @@ const HandlerLikeCard = (cardId, likeCard, likeCount) => {
 
 const deleteCard = (cardId, cardElement) => {
   deleteCardAPI(cardId)
-    .then(() => {
-      cardElement.remove()
-    })
+    .then(() => cardElement.remove())
     .catch(handlerError)
 }
