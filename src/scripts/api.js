@@ -13,22 +13,20 @@ const handlerResponse = (response) => {
   return Promise.reject(`Ошибка: ${response.status}: ${response}`);
 }
 
+export const handlerError = error => {
+  console.error(error)
+}
+
 function getInfoMe() {
   return fetch(config.baseUrl + 'users/me', {headers: config.headers})
   .then(handlerResponse)
   .then(result => result)
-  .catch(error => {
-    console.error(error)
-  })
 }
 
 function getCards() {
   return fetch(config.baseUrl + 'cards', {headers: config.headers})
   .then(handlerResponse)
   .then(result => result)
-  .catch(error => {
-    console.error(error)
-  })
 }
 
 export function startPage() {

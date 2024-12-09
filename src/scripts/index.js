@@ -1,7 +1,7 @@
-import { createCard } from './card.js';
+import { createCard, getCountLikes } from './card.js';
 import { openPopup, closePopup } from './modal.js';
 import { enableValidation, clearValidation } from './validation.js';
-import { startPage, editProfile, newCard, deleteCard, likeCard, deleteLikeCard, changeAvatar } from './api.js';
+import { startPage, editProfile, newCard, changeAvatar, handlerError } from './api.js';
 
 const popups = document.querySelectorAll('.popup');
 
@@ -36,44 +36,12 @@ const validationConfig = {
 
 enableValidation(validationConfig);
 
-const handlerError = error => {
-  console.error(error)
-}
-
 function handlerImagePopup(link, name) {
   popupImageSRC.src = link;
   popupImageSRC.alt = name;
   popupImageCaption.textContent = name;
   openPopup(popupImage);
 };
-
-function handlerLikeCard(evt) {
-  const like = evt.target
-  const cardId = like.parentElement.parentElement.parentElement.getAttribute('data-id')
-  let countLikes = like.parentElement.querySelector('.count_likes')
-  if (evt.target.classList.contains('card__like-button_is-active')) {
-    deleteLikeCard(cardId)
-      .then(result => {
-        like.classList.remove('card__like-button_is-active')
-        countLikes.textContent = getCountLikes(result.likes)
-      })
-  } else {
-    likeCard(cardId)
-      .then(result => {
-        like.classList.add('card__like-button_is-active')
-        countLikes.textContent = getCountLikes(result.likes)
-      })
-      .catch(handlerError)
-  }
-};
-
-function handlerdeleteCard(evt) {
-  deleteCard(evt.target.closest('.card').getAttribute('data-id'))
-    .then(() => {
-      evt.target.closest('.card').remove()
-    })
-    .catch(handlerError)
-}
 
 imageMe.addEventListener('click', function(){
   clearValidation(formImageProfile, validationConfig)
@@ -135,7 +103,7 @@ formNewCard.addEventListener('submit', function (evt) {
   renderLoading(true, button)
   newCard(name, link)
     .then(data => {
-      addCard(createCard(data.name, data.link, handlerImagePopup, handlerLikeCard, 0, data._id, true, false, handlerdeleteCard));
+      addCard(createCard(data._id, data.name, data.link, handlerImagePopup, 0, true, false)); 
       closePopup(popupNewCard);
       formNewCard.reset();
     })
@@ -153,17 +121,6 @@ popups.forEach((popup) => {
   popup.classList.add('popup_is-animated');
 });
 
-function getCountLikes(arr) {
-  if (Array.isArray(arr)){
-    return arr.length
-  }
-  return 0
-};
-
-function myCard(myId, cardId) {
-  return myId === cardId
-};
-
 function renderLoading(isLoading, button){
   if (isLoading) {
     button.textContent = 'Сохранение...'
@@ -172,29 +129,23 @@ function renderLoading(isLoading, button){
   }
 }
 
-(async function start(){
-  let data = await startPage()
-  let infoMe = data[0]
+try{(async function start(){
+  const [infoMe, cardsData] = await startPage()
   imageMe.style.backgroundImage = `url('${infoMe.avatar}')`
   nameProfile.textContent = infoMe.name;
   descriptionProfile.textContent = infoMe.about;
-  let cardsData = data[1]
-  cardsData.reverse().forEach((item) => {
-    let likes = getCountLikes(item.likes)
-    const myCardBool = myCard(infoMe._id, item.owner._id)
-    const myLikeBool =  item.likes.some(like => {
-      return like._id === infoMe._id
-    })
+  cardsData.reverse().forEach((card) => {
     addCard(createCard(
-      item.name,
-      item.link,
+      card._id,
+      card.name,
+      card.link,
       handlerImagePopup,
-      handlerLikeCard,
-      likes,
-      item._id,
-      myCardBool,
-      myLikeBool,
-      handlerdeleteCard
-    ));
-  });
-})();
+      getCountLikes(card.likes),
+      infoMe._id === card.owner._id,
+      card.likes.some(like => like._id === infoMe._id)
+    ))
+  })
+})()} catch(error) {
+  console.log(error)
+  alert('Не загрузилась информация, попробуйте обновить страницу.')
+}
